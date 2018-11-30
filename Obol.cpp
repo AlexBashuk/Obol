@@ -959,7 +959,7 @@ void Jarvis()
     for(i = 0; i + 2 < n; i++)
         for(j = i + 1; j + 1 < n; j++)
         {
-
+            cout << "Hi\n";
 
             bool flag = false;
             for(k = j + 1; k < n; k++)
