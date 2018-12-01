@@ -70,10 +70,9 @@ void swap_p()
     }
 }
 
-void time_skip()
+void time_skip(int time_change = 1500)
 {
     int time = clock();
-    int time_change = 1500;
 
     while(clock() - time < time_change)
     {
@@ -83,7 +82,8 @@ void time_skip()
             if (event.type == sf::Event::Closed)
             {
                 window.close();
-                return;
+                throw string("Window was closed");
+                //return;
             }
         }
     }
@@ -955,15 +955,87 @@ void Jarvis()
     sf::VertexArray int_lines(sf::Lines, 4);
     int obol_lines_size = 0;
 
-    int i, j, k;
-    for(i = 0; i + 2 < n; i++)
-        for(j = i + 1; j + 1 < n; j++)
-        {
-            cout << "Hi\n";
+    sort(points.begin(), points.end());
 
-            bool flag = false;
-            for(k = j + 1; k < n; k++)
+    int i, j, k;
+    for(i = 0; i + 1 < n; i++)
+        for(j = i + 1; j < n; j++)
+        {
+            p1 = points[i];
+            p2 = points[j];
+
+            int_lines[0].position = sf::Vector2f(change_x(p1.X), rev_y(change_y(p1.Y)));
+            int_lines[1].position = sf::Vector2f(change_x(p2.X), rev_y(change_y(p2.Y)));
+            int_lines[0].color = sf::Color::Green;
+            int_lines[1].color = sf::Color::Green;
+
+            int type = 0;
+            for(k = 0; k < n; k++)
+            {
+                if(k == i || k == j)
+                    continue;
+
+                p3 = points[k];
+
+                int_lines[2].position = sf::Vector2f(change_x(p2.X), rev_y(change_y(p2.Y)));
+                int_lines[3].position = sf::Vector2f(change_x(p3.X), rev_y(change_y(p3.Y)));
+                int_lines[2].color = sf::Color::Blue;
+                int_lines[3].color = sf::Color::Blue;
+
+                window.clear(sf::Color::White);
+                window.draw(obol_lines);
+                window.draw(int_lines);
+                draw_Voronoi_points(1);
+                window.display();
+                time_skip(500);
+
+                if(type == 0)
+                {
+                    if(left_move(p1, p2, p3))
+                        type = 1;
+                    else if(right_move(p1, p2, p3))
+                        type = -1;
+                }
+                else
+                {
+                    if(left_move(p1, p2, p3) && type == -1)
+                        break;
+                    if(right_move(p1, p2, p3) && type == 1)
+                        break;
+                }
+            }
+
+            window.clear(sf::Color::White);
+            if(k == n)
+            {
+                obol_lines_size += 2;
+                obol_lines.resize(obol_lines_size);
+
+                obol_lines[obol_lines_size - 2].position = sf::Vector2f(change_x(p1.X), rev_y(change_y(p1.Y)));
+                obol_lines[obol_lines_size - 1].position = sf::Vector2f(change_x(p2.X), rev_y(change_y(p2.Y)));
+                obol_lines[obol_lines_size - 2].color = sf::Color::Black;
+                obol_lines[obol_lines_size - 1].color = sf::Color::Black;
+            }
+            window.draw(obol_lines);
+
+            if(k < n)
+            {
+                int_lines[0].color = sf::Color::Red;
+                int_lines[1].color = sf::Color::Red;
+                int_lines[2].color = sf::Color::Red;
+                int_lines[3].color = sf::Color::Red;
+
+                window.draw(int_lines);
+            }
+            draw_Voronoi_points(1);
+            window.display();
+            time_skip();
         }
+
+    window.clear(sf::Color::White);
+    window.draw(obol_lines);
+    draw_Voronoi_points(1);
+    window.display();
 }
 
 void Greham()
@@ -989,9 +1061,22 @@ int main()
         points.push_back(mp(x, y));
     }
 
-    //Voronoi(1);
-    //Delone();
-    Keyla();
+    try {
+        //Voronoi(1);
+        //Delone();
+        //Keyla();
+        Jarvis();
+    }
+
+    catch(string &s)
+    {
+        cout << s << endl;
+    }
+
+    catch(...)
+    {
+        cout << "Unknown error\n";
+    }
 
     while (window.isOpen())
     {
